@@ -5,12 +5,20 @@
   "parts": [
     { "type": "board-esp32-devkit-c-v4", "id": "esp", "top": 9.6, "left": -100.76, "attrs": {} },
     { "type": "board-ssd1306", "id": "oled1", "top": 99.14, "left": 57.83, "attrs": {} },
+    { "type": "wokwi-a4988", "id": "drv1", "top": 33.2, "left": -523, "rotate": 270, "attrs": {} },
     {
-      "type": "wokwi-led",
-      "id": "led1",
-      "top": 34.8,
-      "left": -140.2,
-      "attrs": { "color": "red" }
+      "type": "wokwi-stepper-motor",
+      "id": "stepper1",
+      "top": -494.69,
+      "left": -603.92,
+      "attrs": { "display": "angle", "arrow": "orange" }
+    },
+    {
+      "type": "wokwi-pushbutton-6mm",
+      "id": "btn1",
+      "top": 113,
+      "left": -144,
+      "attrs": { "color": "green" }
     }
   ],
   "connections": [
@@ -20,8 +28,15 @@
     [ "oled1:SDA", "esp:21", "blue", [ "v-19.2", "h-124.73" ] ],
     [ "oled1:GND", "esp:GND.2", "black", [ "v-67.2", "h-96" ] ],
     [ "oled1:VCC", "esp:3V3", "red", [ "v-28.8", "h0.15", "v-76.8", "h-201.75" ] ],
-    [ "led1:A", "esp:CMD", "green", [ "v0" ] ],
-    [ "led1:C", "esp:32", "green", [ "v0" ] ]
+    [ "drv1:1B", "stepper1:B-", "black", [ "v0" ] ],
+    [ "drv1:1A", "stepper1:B+", "green", [ "v0" ] ],
+    [ "stepper1:A+", "drv1:2A", "blue", [ "v0" ] ],
+    [ "stepper1:A-", "drv1:2B", "red", [ "v0" ] ],
+    [ "drv1:SLEEP", "drv1:RESET", "green", [ "v15.92", "h-9.9" ] ],
+    [ "drv1:DIR", "esp:12", "green", [ "v0" ] ],
+    [ "drv1:STEP", "esp:13", "green", [ "v0" ] ],
+    [ "btn1:1.r", "esp:25", "green", [ "v0" ] ],
+    [ "btn1:2.r", "esp:GND.1", "black", [ "h-8.8", "v29.2" ] ]
   ],
   "dependencies": {}
 }
