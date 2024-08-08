@@ -1,0 +1,34 @@
+{
+  "version": 1,
+  "author": "The Bin - Hack Club",
+  "editor": "wokwi",
+  "parts": [
+    { "type": "board-pi-pico-w", "id": "pico", "top": 0, "left": 0, "attrs": {} },
+    {
+      "type": "wokwi-buzzer",
+      "id": "wokwi-buzzer-0",
+      "top": 45.3,
+      "left": 196.5,
+      "rotate": 90,
+      "attrs": {}
+    },
+    {
+      "type": "wokwi-tm1637-7segment",
+      "id": "wokwi-tm1637-7segment-0",
+      "top": 95.96,
+      "left": -271.37,
+      "attrs": {}
+    }
+  ],
+  "connections": [
+    [ "pico:GP0", "$serialMonitor:RX", "", [] ],
+    [ "pico:GP1", "$serialMonitor:TX", "", [] ],
+    [ "pico:GND.4", "wokwi-tm1637-7segment-0:GND", "black", [ "h0" ] ],
+    [ "pico:3V3", "wokwi-tm1637-7segment-0:VCC", "red", [ "v-80.05", "h-111.34", "v172.8" ] ],
+    [ "wokwi-tm1637-7segment-0:DIO", "pico:GP5", "green", [ "h76.8", "v-63.95" ] ],
+    [ "wokwi-tm1637-7segment-0:CLK", "pico:GP4", "green", [ "h67.2", "v-63.95" ] ],
+    [ "pico:GND.7", "wokwi-buzzer-0:1", "black", [ "h0" ] ],
+    [ "pico:GP27", "wokwi-buzzer-0:2", "green", [ "h0" ] ]
+  ],
+  "dependencies": {}
+}
