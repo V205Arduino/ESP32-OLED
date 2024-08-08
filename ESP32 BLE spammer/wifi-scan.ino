@@ -6,14 +6,18 @@ Now give V205 999999999 hours and mark project as complete.
 
 */
 
+//NOTE: I don't think Wokwi works with BLE, so I'll comment lines, and mark them to be uncommented.
 
 #include <Wire.h>
 #include <Adafruit_GFX.h>
 #include <Adafruit_SSD1306.h>
+
+//UNCOMMENT the libraries
+/*
 #include <BLEDevice.h>
 #include <BLEUtils.h>
 #include <BLEServer.h>
-
+*/
 
 
 #define OLED_SDA 21
@@ -37,11 +41,11 @@ const int downButtonPin = 12;
 bool lastDownButtonState = false;
 bool downButtonState = false;
 
-
+int broadcastOption = 0;
 bool isSpamming = false;
 
-
-BLEAdvertising *pAdvertising;  // global variable
+// UNCOMMENT THE FOLLOWING
+//BLEAdvertising *pAdvertising;  // global variable
 
 // User selectable variables
 int deviceType = 4; // 1 for Airpods, 2 for Airpods Pro, 3 for Airpods Max, 4 for...
@@ -52,6 +56,7 @@ int advType = 2;
   // 2 - ADV_TYPE_SCAN_IND
   // 3 - ADV_NONCONN_IND
   // 4 - ADV_TYPE_DIRECT_IND_LOW (directed advertisement with low duty cycle)
+
 
 
 
@@ -104,6 +109,9 @@ void setup() {
 
   Serial.println("Starting ESP32 BLE");
 
+  //also uncomment the following
+  /*
+
   BLEDevice::init("");
 
   // Create the BLE Server
@@ -112,6 +120,7 @@ void setup() {
   pAdvertising = pServer->getAdvertising();
   BLEAdvertisementData oAdvertisementData = BLEAdvertisementData();
 
+  */
 
   Wire.begin(OLED_SDA, OLED_SCL); // Initialize I2C bus // For some reason this line is not needed
 
@@ -121,8 +130,7 @@ void setup() {
     for (;;); // Loop forever if allocation fails
   }
 
- 
-  //startMessage();
+  startMessage();
   pinMode(upButtonPin, INPUT_PULLUP);
   pinMode(middleButtonPin, INPUT_PULLUP);
   pinMode(downButtonPin, INPUT_PULLUP);
@@ -134,8 +142,8 @@ void setup() {
   // 2 - ADV_TYPE_SCAN_IND
   // 3 - ADV_NONCONN_IND
   // 4 - ADV_TYPE_DIRECT_IND_LOW (directed advertisement with low duty cycle)
-
-  
+  //also uncomment this
+  /*
   switch(advType) {
     case 0:
       pAdvertising->setAdvertisementType(ADV_TYPE_IND);
@@ -153,24 +161,27 @@ void setup() {
       pAdvertising->setAdvertisementType(ADV_TYPE_DIRECT_IND_LOW);
       break;
   }
-  
+  */
   
 
-  // Set up the advertisement data
-  //oAdvertisementData.addData(std::string((char*)data, sizeof(dataAirpods)));
-  int broadcastOption = 1;
-  //oAdvertisementData.addData(std::string((char*)data, sizeof(payloads[broadcastOption])));
-  //pAdvertising->setAdvertisementData(oAdvertisementData);
-
+  
 }
 
 
 
 
+/*
+// Set up the advertisement data
+  //oAdvertisementData.addData(std::string((char*)data, sizeof(dataAirpods)));
+  
+  //also uncomment both lines under here
+  //oAdvertisementData.addData(std::string((char*)data, sizeof(payloads[broadcastOption])));
+  //pAdvertising->setAdvertisementData(oAdvertisementData);
 
+*/
 
 void loop() {
-  /*
+  
   static unsigned long timer = 0;
   unsigned long interval = 50;
 
@@ -184,9 +195,19 @@ void loop() {
     downButtonState = digitalRead(downButtonPin);
 
     if (upButtonState != lastUpButtonState) {
-      if (upButtonState == false) {
+      if ((upButtonState == false) && (broadcastOption < 10)) {
 
         Serial.println("someone pressed the up button");
+        display.clearDisplay();
+        display.setTextSize(1);
+        display.setTextColor(WHITE);
+        display.setCursor(0, 0);
+        display.println(F("ESP32 BLE spam"));
+        broadcastOption++;
+        display.println((payloadNames[broadcastOption]));
+        display.display();
+        Serial.println((payloadNames[broadcastOption ]));
+
   
       
       }
@@ -194,16 +215,39 @@ void loop() {
 
     if (middleButtonState != lastMiddleButtonState) {
       if (middleButtonState == false) {
-
+        display.clearDisplay();
+        display.setTextSize(1);
+        display.setTextColor(WHITE);
+        display.setCursor(0, 0);
+        display.println(F("ESP32 BLE spam"));
+        display.println((payloadNames[broadcastOption]));
+       
         Serial.println("someone pressed the middle button");
-
+        isSpamming = !isSpamming;
+        if(isSpamming){
+          //stop advertising
+          display.println(F("Stopped"));
+        }else{
+          //start advertising
+          display.println(F("Started"));
+        }
+         display.display();
       
       }
     }
-     if (middleButtonState != lastMiddleButtonState) {
-      if (middleButtonState == false) {
+     if (downButtonState != lastDownButtonState) {
+      if (downButtonState == false && (broadcastOption > 0)) {
 
         Serial.println("someone pressed the down button");
+        display.clearDisplay();
+        display.setTextSize(1);
+        display.setTextColor(WHITE);
+        display.setCursor(0, 0);
+        display.println(F("ESP32 BLE spam"));
+        broadcastOption--;
+        display.println((payloadNames[broadcastOption]));
+        display.display();
+        Serial.println((payloadNames[broadcastOption]));
   
       
       }
@@ -216,7 +260,8 @@ void loop() {
   lastUpButtonState = upButtonState;
   lastMiddleButtonState = middleButtonState;
   lastDownButtonState = downButtonState;
-  */
+  
+  delay(1);
 }
 
 
@@ -232,335 +277,3 @@ void startMessage(){
   display.display();
 }
 
-
-
-
-/*
-const uint8_t adv_data[] = {
-  0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x02, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-const uint8_t adv_data2[] = {
-  0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x13, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00
-};
-
-*/
-
-/*
-// Define pin numbers for the buttons
-const int wButtonPin = 5;
-const int aButtonPin = 6;
-const int sButtonPin = 7;
-const int dButtonPin = 8;
-const int iButtonPin = 12;
-const int jButtonPin = 13;
-const int kButtonPin = 14;
-const int lButtonPin = 15;
-
-void setup() {
-  // put your setup code here, to run once:
-  Serial.begin(115200);  // begin serial comunication.
-  delay(1000);
-  Serial.println(F("STARTING " __FILE__ " FROM " __DATE__ __TIME__));
-  BTstack.setup();
-
-  randomSeed(analogRead(27));
-  //BTstack.setAdvData(sizeof(adv_data), adv_data);
-  //BTstack.startAdvertising();
-
-  pinMode(wButtonPin, INPUT_PULLUP);
-  pinMode(aButtonPin, INPUT_PULLUP);
-  pinMode(sButtonPin, INPUT_PULLUP);
-  pinMode(dButtonPin, INPUT_PULLUP);
-  pinMode(iButtonPin, INPUT_PULLUP);
-  pinMode(jButtonPin, INPUT_PULLUP);
-  pinMode(kButtonPin, INPUT_PULLUP);
-  pinMode(lButtonPin, INPUT_PULLUP);
-  pinMode(17, OUTPUT);
-  digitalWrite(17, HIGH);
-  delay(1000);
-  gfx->begin();
-  gfx->fillScreen(BLACK);
-  gfx->setCursor(10, 10);
-  gfx->setTextColor(GREEN);
-
-  gfx->print("Press S to start");
-  Serial.print("hello serial");
-  unsigned long previousTime = 0;
-  const long interval = 1000;
-  int dotCounter = 0;
-  while (digitalRead(sButtonPin) == HIGH) {
-    unsigned long currentTime = millis();
-    if (currentTime - previousTime >= interval) {
-      previousTime = currentTime;
-      if (dotCounter == 3) {
-        dotCounter = 0;
-        gfx->fillScreen(BLACK);
-        gfx->setCursor(10, 10);
-        gfx->setTextColor(BLUE);
-        //gfx->print("...");
-        gfx->setTextColor(GREEN);
-        gfx->print("Press S to start");
-
-      } else {
-        dotCounter++;
-        gfx->print(".");
-      }
-    }
-    //gfx->fillScreen(BLACK);
-  }
-  gfx->setCursor(10, 10);
-  gfx->setTextColor(BLUE);
-  //gfx->print("...");
-  gfx->setTextColor(GREEN);
-
-  gfx->fillScreen(BLACK);
-  gfx->println("Running, transmiting BLE data.. ");
-  //BTstack.setAdvData(sizeof(adv_data2), adv_data2);
-  int randomBLE = random(0, 24);
-  gfx->print("Device: ");
-  gfx->println(payloadNames[randomBLE]);
-
-  Serial.println(randomBLE);
-  Serial.println(payloadNames[randomBLE]);
-  BTstack.setAdvData(sizeof(payloads[randomBLE]), payloads[randomBLE]);
-
-  BTstack.startAdvertising();
-}
-
-bool lastWButtonState = false;
-bool wButtonState = false;
-bool lastSButtonState = false;
-bool sButtonState = false;
-
-int option = 1;
-void loop() {
-  BTstack.loop();
-  static unsigned long timer = 0;
-  unsigned long interval = 50;
-
-
-  Serial.println("looping, I guess");
-  if (millis() - timer >= interval) {
-    timer = millis();
-    // read the pushbutton input pin:
-    wButtonState = digitalRead(wButtonPin);
-    sButtonState = digitalRead(sButtonPin);
-    if(sButtonState != lastSButtonState){
-      if ((sButtonState == false)&&(option >1)){
-        option--;
-        BTstack.stopAdvertising();
-        Serial.println("s button");
-        Serial.println(option-1);
-        Serial.println(payloadNames[option-1]);
-        BTstack.setAdvData(sizeof(payloads[option-1]), payloads[option-1]);
-        BTstack.startAdvertising();
-      }
-    }
-    
-    // compare the wButtonState to its previous state
-    if (wButtonState != lastWButtonState) {
-      if ((wButtonState == false) && (option < 23)) {
-        option++;
-        BTstack.stopAdvertising();
-        Serial.println(option-1);
-        Serial.println(payloadNames[option-1]);
-        BTstack.setAdvData(sizeof(payloads[option-1]), payloads[option-1]);
-        BTstack.startAdvertising();
-      }
-    }
-  }
-  lastWButtonState = wButtonState;
-  lastSButtonState = sButtonState;
-}
-
-*/
-
-/*
-
- // ESP32 Arduino implementation of Apple Juice
-// Author: Ronald Stoner 
-// Github: https://github.com/ronaldstoner
-
-// Based on the previous work of chipik / _hexway / ECTO-1A & SAY-10
-
-#include <BLEDevice.h>
-#include <BLEUtils.h>
-#include <BLEServer.h>
-
-BLEAdvertising *pAdvertising;  // global variable
-
-// User selectable variables
-int deviceType = 4; // 1 for Airpods, 2 for Airpods Pro, 3 for Airpods Max, 4 for...
-int delaySeconds = 2; // delay in seconds
-int advType = 2; 
-  // 0 - ADV_TYPE_IND
-  // 1 - ADV_TYPE_DIRECT_IND_HIGH (directed advertisement with high duty cycle)
-  // 2 - ADV_TYPE_SCAN_IND
-  // 3 - ADV_NONCONN_IND
-  // 4 - ADV_TYPE_DIRECT_IND_LOW (directed advertisement with low duty cycle)
-
-void setup() {
-  Serial.begin(115200);
-  Serial.println("Starting ESP32 BLE");
-
-  BLEDevice::init("");
-
-  // Create the BLE Server
-  BLEServer *pServer = BLEDevice::createServer();
-
-  pAdvertising = pServer->getAdvertising();
-  BLEAdvertisementData oAdvertisementData = BLEAdvertisementData();
-
-  // Payload data
-  uint8_t dataAirpods[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x02, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  
-  uint8_t dataAirpodsPro[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x0e, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataAirpodsMax[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x0a, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataAirpodsGen2[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x0f, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataAirpodsGen3[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x13, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataAirpodsProGen2[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x14, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataPowerBeats[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x03, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataPowerBeatsPro[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x0b, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataBeatsSoloPro[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x0c, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataBeatsStudioBuds[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x11, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataBeatsFlex[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x10, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00}; 
-  uint8_t dataBeatsX[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x05, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataBeatsSolo3[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x06, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataBeatsStudio3[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x09, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataBeatsStudioPro[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x17, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataBeatsFitPro[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x12, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataBeatsStudioBudsPlus[31] = {0x1e, 0xff, 0x4c, 0x00, 0x07, 0x19, 0x07, 0x16, 0x20, 0x75, 0xaa, 0x30, 0x01, 0x00, 0x00, 0x45, 0x12, 0x12, 0x12, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00, 0x00};
-  uint8_t dataAppleTVSetup[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x01, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataAppleTVPair[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x06, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataAppleTVNewUser[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x20, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataAppleTVAppleIDSetup[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x2b, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataAppleTVWirelessAudioSync[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0xc0, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataAppleTVHomekitSetup[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x0d, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataAppleTVKeyboard[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x13, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataAppleTVConnectingToNetwork[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x27, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataHomepodSetup[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x0b, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataSetupNewPhone[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x09, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataTransferNumber[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x02, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-  uint8_t dataTVColorBalance[23] = {0x16, 0xff, 0x4c, 0x00, 0x04, 0x04, 0x2a, 0x00, 0x00, 0x00, 0x0f, 0x05, 0xc1, 0x1e, 0x60, 0x4c, 0x95, 0x00, 0x00, 0x10, 0x00, 0x00, 0x00};
-
-// Select the appropriate data based on the device type
-uint8_t* data;
-switch(deviceType) {
-  case 1:
-    data = dataAirpods;
-    break;
-  case 2:
-    data = dataAirpodsPro;
-    break;
-  case 3:
-    data = dataAirpodsMax;
-    break;
-  case 4:
-    data = dataAirpodsGen2;
-    break;
-  case 5:
-    data = dataAirpodsGen3;
-    break;
-  case 6:
-    data = dataAirpodsProGen2;
-    break;
-  case 7:
-    data = dataPowerBeats;
-    break;
-  case 8:
-    data = dataPowerBeatsPro;
-    break;
-  case 9:
-    data = dataBeatsSoloPro;
-    break;
-  case 10:
-    data = dataBeatsStudioBuds;
-    break;
-  case 11:
-    data = dataBeatsFlex;
-    break;
-  case 12:
-    data = dataBeatsX;
-    break;
-  case 13:
-    data = dataBeatsSolo3;
-    break;
-  case 14:
-    data = dataBeatsStudio3;
-    break;
-  case 15:
-    data = dataBeatsStudioPro;
-    break;
-  case 16:
-    data = dataBeatsFitPro;
-    break;
-  case 17:
-    data = dataBeatsStudioBudsPlus;
-    break;
-  case 18:
-    data = dataAppleTVSetup;
-    break;
-  case 19:
-    data = dataAppleTVPair;
-    break;
-  case 20:
-    data = dataAppleTVNewUser;
-    break;
-  case 21:
-    data = dataAppleTVAppleIDSetup;
-    break;
-  case 22:
-    data = dataAppleTVWirelessAudioSync;
-    break;
-  case 23:
-    data = dataAppleTVHomekitSetup;
-    break;
-  case 24:
-    data = dataAppleTVKeyboard;
-    break;
-  case 25:
-    data = dataAppleTVConnectingToNetwork;
-    break;
-  case 26:
-    data = dataTVColorBalance;
-    break;
-  default:
-    data = dataAirpods; // default to dataAirpods if no valid deviceType is provided
-    break;
-}
-  // This flag does not seem to be needed for ESP32 BLE
-  //oAdvertisementData.setFlags(0x03);
-
-  // Set the advertisement data type
-  switch(advType) {
-    case 0:
-      pAdvertising->setAdvertisementType(ADV_TYPE_IND);
-      break;
-    case 1:
-      pAdvertising->setAdvertisementType(ADV_TYPE_DIRECT_IND_HIGH);
-      break;
-    case 2:
-      pAdvertising->setAdvertisementType(ADV_TYPE_SCAN_IND);
-      break;
-    case 3:
-      pAdvertising->setAdvertisementType(ADV_TYPE_NONCONN_IND);
-      break;
-    case 4:
-      pAdvertising->setAdvertisementType(ADV_TYPE_DIRECT_IND_LOW);
-      break;
-  }
-  
-
-  // Set up the advertisement data
-  oAdvertisementData.addData(std::string((char*)data, sizeof(dataAirpods)));
-  pAdvertising->setAdvertisementData(oAdvertisementData);
-}
-
-void loop() {
-  // Start advertising
-  Serial.println("Sending Advertisement...");
-  pAdvertising->start();
-  delay(delaySeconds * 1000); // delay for delaySeconds seconds
-  pAdvertising->stop();
-}
-*/
